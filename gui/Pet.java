@@ -1,5 +1,7 @@
 package pet.gui;
 
+import static org.junit.Assert.assertTrue;
+
 import java.awt.BorderLayout;
 
 import java.awt.Color;
@@ -9,27 +11,33 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.border.EtchedBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.plaf.FileChooserUI;
 import javax.swing.text.Document;
 
 import pet.model.PetModel;
 import pet.model.StdPetModel;
+import util.Contract;
 
 public class Pet {
     
@@ -141,16 +149,18 @@ public class Pet {
          *  charge de tout dans un écouteur qui demande confirmation puis
          *  libère les ressources de la fenêtre en cas de réponse positive.
          */
-        /*****************/
-        /** A COMPLETER **/
-        /*****************/
-        
+    	frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         /*
          * Observateur du modèle.
          */
-        /*****************/
-        /** A COMPLETER **/
-        /*****************/
+    	model.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				setItemsEnabledState();
+				updateScrollerAndEditorComponents();
+				updateStatusBar();
+			}
+		});
         
         /*
          * Écouteurs des items du menu
@@ -158,6 +168,7 @@ public class Pet {
         menuItems.get(Item.NEW).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+            	confirmAction();
                 /*****************/
                 /** A COMPLETER **/
                 /*****************/
@@ -167,6 +178,7 @@ public class Pet {
             new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
+                	confirmAction();
                     /*****************/
                     /** A COMPLETER **/
                     /*****************/
@@ -176,6 +188,7 @@ public class Pet {
         menuItems.get(Item.OPEN).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+            	confirmAction();
                 /*****************/
                 /** A COMPLETER **/
                 /*****************/
@@ -184,6 +197,7 @@ public class Pet {
         menuItems.get(Item.REOPEN).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+            	confirmAction();
                 /*****************/
                 /** A COMPLETER **/
                 /*****************/
@@ -208,6 +222,7 @@ public class Pet {
         menuItems.get(Item.CLOSE).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+            	confirmAction();
                 /*****************/
                 /** A COMPLETER **/
                 /*****************/
@@ -216,6 +231,7 @@ public class Pet {
         menuItems.get(Item.CLEAR).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+            	confirmAction();
                 /*****************/
                 /** A COMPLETER **/
                 /*****************/
@@ -224,9 +240,7 @@ public class Pet {
         menuItems.get(Item.QUIT).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                /*****************/
-                /** A COMPLETER **/
-                /*****************/
+            	confirmAction();
             }
         });
     }
@@ -260,12 +274,12 @@ public class Pet {
 	private void updateScrollerAndEditorComponents() { 
     	Document modelDoc=model.getDocument();
     	Document editorDoc=editor.getDocument();
-    	if (editorDoc != modelDoc) {
-			editor.setDocument(modelDoc);
-		}
     	if (modelDoc == null){
     		scroller.setViewportView(null);
     	}else {
+        	if (editorDoc != modelDoc) {
+    			editor.setDocument(modelDoc);
+    		}
 			scroller.setViewportView(editor);
 		}
     }
@@ -297,10 +311,14 @@ public class Pet {
      *         || le document était en cours d'édition mais l'utilisateur
      *            a répondu positivement à la demande de confirmation
      */
-    private boolean confirmAction() {
-        /*****************/
-        /** A COMPLETER **/
-        /*****************/
+    private boolean confirmAction() { 
+    	/*qst : si le modele est synch mais l'utilisateur tape non ??*/
+    	
+    	int choix = JOptionPane.showConfirmDialog(null, "Voulez-vous continuer ?", "Confirmation", JOptionPane.YES_NO_OPTION);
+    	if (model.isSynchronized() || model.getDocument() == null ||(choix == JOptionPane.YES_OPTION)) {
+    		return true;
+		}
+    	return false;
     }
     
     /**
@@ -313,10 +331,11 @@ public class Pet {
      *         || le fichier existe mais l'utilisateur a répondu positivement
      *            à la demande de confirmation
      */
-    private boolean confirmReplaceContent(File f) {
-        /*****************/
-        /** A COMPLETER **/
-        /*****************/
+    @SuppressWarnings("unused")
+	private boolean confirmReplaceContent(File f) {
+    	Contract.checkCondition(f != null);
+    	
+    	return ( !f.exists() || confirmAction())? true:false; 
     }
     
     /**
@@ -324,10 +343,9 @@ public class Pet {
      *  être interceptée et transformée en message présenté dans une boite de
      *  dialogue.
      */
-    private void displayError(String m) {
-        /*****************/
-        /** A COMPLETER **/
-        /*****************/
+    @SuppressWarnings("unused")
+	private void displayError(String m) {
+    	JOptionPane.showMessageDialog(null, m, "Erreur", JOptionPane.ERROR_MESSAGE);
     }
     
     /**
@@ -344,10 +362,34 @@ public class Pet {
      * Dans les deux derniers cas, une boite de dialogue vient de plus décrire
      *  le problème.
      */
-    private File selectSaveFile() {
-        /*****************/
-        /** A COMPLETER **/
-        /*****************/
+    @SuppressWarnings("unused")
+	private File selectSaveFile() {
+    	JFileChooser fc = new JFileChooser();
+    	int choice =fc.showSaveDialog(null);
+    	
+        if (choice == JFileChooser.APPROVE_OPTION) {
+        	File selectedFile = fc.getSelectedFile();
+  	
+	    	if (!selectedFile.isFile()) {
+	                displayError("Le chemin spécifié existe, mais ce n'est pas un fichier.");
+	                return null;
+	    	}  
+        	if (!selectedFile.exists()) {
+        		try {
+					if (!selectedFile.createNewFile()) {
+						displayError("file already exists");
+						return null;
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+					displayError("Erreur lors de la création du fichier.");
+	                return null;
+				}
+			}
+            return selectedFile; 
+        } else {
+            return null;
+        }
     }
     
     /**
@@ -359,9 +401,19 @@ public class Pet {
      * Dans ce dernier cas, une boite de dialogue vient de plus décrire
      *  le problème.
      */
-    private File selectLoadFile() {
-        /*****************/
-        /** A COMPLETER **/
-        /*****************/
+    @SuppressWarnings("unused")
+	private File selectLoadFile() {
+    	JFileChooser fc = new JFileChooser();
+    	int choice =fc.showOpenDialog(null);
+    	if (choice ==JFileChooser.APPROVE_OPTION) {
+    		File selectedFile = fc.getSelectedFile();
+    		if (!selectedFile.exists() || !selectedFile.isFile()) {
+				displayError("le nom choisi ne correspond pas un fichier existant");
+				return null;
+			}
+    		return selectedFile;
+		}else {
+			return null;
+		}
     }
 }
