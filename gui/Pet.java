@@ -1,6 +1,5 @@
 package pet.gui;
 
-import static org.junit.Assert.assertTrue;
 
 import java.awt.BorderLayout;
 
@@ -168,64 +167,71 @@ public class Pet {
         menuItems.get(Item.NEW).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-            	confirmAction();
-                /*****************/
-                /** A COMPLETER **/
-                /*****************/
+            	if(confirmAction()) {
+            		model.setNewDocWithoutFile();
+            	}
             }
         });
-        menuItems.get(Item.NEW_FROM_FILE).addActionListener(
-            new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                	confirmAction();
-                    /*****************/
-                    /** A COMPLETER **/
-                    /*****************/
-                }
-            }
-        );
+        
+        menuItems.get(Item.NEW_FROM_FILE).addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (confirmAction()) {
+					File f= selectLoadFile();
+					if (f != null) {
+						try {
+							model.setNewDocFromFile(f);
+						} catch (IOException e2) {
+							displayError("Erreur de lecture du fichier ");
+						}
+						
+					}
+				}
+			}
+		});
+        
+       
         menuItems.get(Item.OPEN).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-            	confirmAction();
-                /*****************/
-                /** A COMPLETER **/
-                /*****************/
-            }
-        });
+				if (confirmAction()) {
+					File f= selectLoadFile();
+					if (f != null) {
+						try {
+							model.setNewDocAndNewFile(f);
+						} catch (IOException e2) {
+							displayError("Erreur de lecture du fichier ");
+						}
+						
+					}
+				}
+			}
+		});
         menuItems.get(Item.REOPEN).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-            	confirmAction();
-                /*****************/
-                /** A COMPLETER **/
-                /*****************/
+            	if(confirmAction()){
+            		model.resetCurrentDocWithCurrentFile();
+            	}
             }
         });
         menuItems.get(Item.SAVE).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                /*****************/
-                /** A COMPLETER **/
-                /*****************/
+            	model.saveCurrentDocIntoCurrentFile();
             }
         });
         menuItems.get(Item.SAVE_AS).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                /*****************/
-                /** A COMPLETER **/
-                /*****************/
+            	model.saveCurrentDocIntoFile();
             }
         });
         menuItems.get(Item.CLOSE).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-            	confirmAction();
-                /*****************/
-                /** A COMPLETER **/
-                /*****************/
+            	if(confirmAction()) {
+            	}
             }
         });
         menuItems.get(Item.CLEAR).addActionListener(new ActionListener() {
@@ -323,6 +329,7 @@ public class Pet {
     
     /**
      * Demande une confirmation d'écrasement de fichier.
+
      * @pre
      *     f != null
      * @post

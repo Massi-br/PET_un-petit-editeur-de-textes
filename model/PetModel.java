@@ -101,7 +101,7 @@ public interface PetModel {
      *     getFile() == null
      *     !isSynchronized() </pre>
      */
-    void removeDocAndFile();
+    void removeDocAndFile(); 
 
     /**
      * Recharge le contenu du fichier courant dans le document courant.
@@ -116,7 +116,7 @@ public interface PetModel {
      * @throws IOException
      *     S'il s'est produit une erreur durant la lecture du fichier courant
      */
-    void resetCurrentDocWithCurrentFile() throws IOException;
+    void resetCurrentDocWithCurrentFile() throws IOException; 
 
     /**
      * Sauvegarde le contenu du document courant dans le fichier courant.
