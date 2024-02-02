@@ -114,20 +114,21 @@ public class Pet {
      */
     private void placeMenuItemsAndMenus() {
     	JMenuBar jmb = new JMenuBar();
-    	for (Menu m : Menu.values() ) {
-			JMenu jm= new JMenu(m.label());
-	    	for (Item i : Menu.STRUCT.get(m)) {
-				if (i == null) {
-					jm.add(new JSeparator());
-				}else {
-					jm.add(new JMenuItem(i.label()));
-				}
-	    	}
-	    	jmb.add(jm);
-		}
+    		for (Menu m: Menu.values()) {
+    			JMenu jm = new JMenu(m.label());
+    			
+    				for (Item x: Menu.STRUCT.get(m)) {
+    					if( x==null ) {
+    						jm.addSeparator();
+    					} else {
+    						jm.add(menuItems.get(x));
+    					}
+    				}
+    			
+    			jmb.add(jm);
+    		}
     	frame.setJMenuBar(jmb);
     }
-    
     private void placeComponents() {
         frame.add(scroller, BorderLayout.CENTER);
         
@@ -211,42 +212,94 @@ public class Pet {
             @Override
             public void actionPerformed(ActionEvent e) {
             	if(confirmAction()){
-            		model.resetCurrentDocWithCurrentFile();
+            		File f= selectLoadFile();
+            		if (f != null) {
+            			try {
+            				model.resetCurrentDocWithCurrentFile();
+						} catch (IOException e2) {
+							displayError("Erreur de lecture du fichier ");
+						}
+					}
+            		
             	}
             }
         });
         menuItems.get(Item.SAVE).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-            	model.saveCurrentDocIntoCurrentFile();
+            	try {
+            		if (confirmReplaceContent(model.getFile())) {
+            			model.saveCurrentDocIntoCurrentFile();
+            		}
+				} catch (IOException e2) {
+					displayError("Erreur d'ecriture dans le fichier ");
+				}
             }
         });
         menuItems.get(Item.SAVE_AS).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-            	model.saveCurrentDocIntoFile();
+            	File f = selectSaveFile();
+            	try {
+            		model.saveCurrentDocIntoFile(f);
+				} catch (IOException e2) {
+					displayError("Erreur d'ecriture dans le fichier ");
+				}
+            	
             }
         });
         menuItems.get(Item.CLOSE).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
             	if(confirmAction()) {
+            		model.removeDocAndFile(); 
             	}
             }
         });
         menuItems.get(Item.CLEAR).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-            	confirmAction();
-                /*****************/
-                /** A COMPLETER **/
-                /*****************/
+            	if(confirmAction()) {
+            		model.clearDocument();
+            	}
             }
         });
         menuItems.get(Item.QUIT).addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-            	confirmAction();
+            	if (!model.isSynchronized() && model.getDocument() != null) {
+            		if (confirmAction()) {
+            			if (model.getFile() != null) {
+            				if (confirmSave()) {
+								try {
+									model.saveCurrentDocIntoCurrentFile();
+								} catch (IOException e2) {
+									displayError("Le fichier n'a pas été sauvegardé");
+									return;
+								}
+							}
+							
+						}else {
+							if (confirmSave()) {
+								try {
+									File file = selectSaveFile();
+									if (file == null) {
+										displayError("Aucun fichier selectioné ");
+										return; 
+									}
+									model.saveCurrentDocIntoFile(file);
+								} catch (IOException e2) {
+									displayError("Le fichier n'a pas été sauvegardé");
+									return;
+								}								
+							}
+						}
+					}
+            		frame.dispose();
+                	System.exit(0);
+				}else {
+					frame.dispose();
+				}
             }
         });
     }
@@ -326,7 +379,12 @@ public class Pet {
 		}
     	return false;
     }
-    
+    private boolean confirmSave() {
+    	return JOptionPane.showConfirmDialog(null, 
+        		"Voulez-vous sauvegarder?",
+        		"Confirmation",
+        		JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+    }
     /**
      * Demande une confirmation d'écrasement de fichier.
 
@@ -338,7 +396,7 @@ public class Pet {
      *         || le fichier existe mais l'utilisateur a répondu positivement
      *            à la demande de confirmation
      */
-    @SuppressWarnings("unused")
+    @SuppressWarnings("unused") 
 	private boolean confirmReplaceContent(File f) {
     	Contract.checkCondition(f != null);
     	
